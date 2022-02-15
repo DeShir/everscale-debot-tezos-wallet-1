@@ -1,16 +1,21 @@
-pragma ton -solidity >=0.35.0;
+pragma ton-solidity >=0.35.0;
 pragma AbiHeader expire;
 pragma AbiHeader time;
 pragma AbiHeader pubkey;
 
-import "./interfaces/Debot.sol";
-import "./interfaces/Terminal.sol";
+import "./interface/Terminal.sol";
+import "./interface/Menu.sol";
+import "./interface/Network.sol";
+import "./interface/Debot.sol";
+import "./statemachine/StateMachine.sol";
 
-contract TezosWallet is Debot {
+
+contract TezosWallet is Debot, StateMachine {
 
     /// @notice Entry point function for DeBot.
     function start() public override {
-        Terminal.print(0, "Hello!");
+        init();
+        send(Event.Start, "");
     }
 
     /// @notice Returns Metadata about DeBot.
@@ -31,6 +36,6 @@ contract TezosWallet is Debot {
     }
 
     function getRequiredInterfaces() public view override returns (uint256[] interfaces) {
-        return [Terminal.ID];
+        return [Terminal.ID, Menu.ID, Network.ID];
     }
 }

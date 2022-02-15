@@ -12,5 +12,5 @@ DEPLOY_DIR=./build/deploy
 echoc "Run App"
 # shellcheck disable=SC2002
 APP_ADDR=$(cat "$DEPLOY_DIR/genaddr.log" | grep "Raw address:" | cut -d ' ' -f 3)
-tonos-cli --url "$NETWORK" debot fetch "$APP_ADDR"
+tonos-cli --url "$NETWORK" debot --debug fetch "$APP_ADDR"
 echoc "Done."
