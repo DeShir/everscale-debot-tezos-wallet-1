@@ -1,4 +1,4 @@
-pragma ton-solidity >=0.35.0;
+pragma ton-solidity >= 0.53.0;
 pragma AbiHeader expire;
 pragma AbiHeader time;
 pragma AbiHeader pubkey;
@@ -24,7 +24,7 @@ contract TezosWallet is Debot, StateMachine {
         address support, string hello, string language, string dabi, bytes icon
     ) {
         name = "Tezos Wallet Bot";
-        version = "0.0.1";
+        version = "0.0.2";
         publisher = "ShiroKovka";
         caption = "";
         author = "ShiroKovka";

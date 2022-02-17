@@ -1,4 +1,4 @@
-pragma ton-solidity >=0.35.0;
+pragma ton-solidity >= 0.53.0;
 
 import "./Action.sol";
 import "../lib/TezosClient.sol";
