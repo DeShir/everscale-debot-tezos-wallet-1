@@ -7,6 +7,10 @@ import "./interface/Terminal.sol";
 import "./interface/Menu.sol";
 import "./interface/Network.sol";
 import "./interface/Debot.sol";
+import "./interface/Json.sol";
+import "./interface/ConfirmInput.sol";
+import "./interface/Sdk.sol";
+import "./interface/Hex.sol";
 import "./statemachine/StateMachine.sol";
 
 
@@ -36,6 +40,6 @@ contract TezosWallet is Debot, StateMachine {
     }
 
     function getRequiredInterfaces() public view override returns (uint256[] interfaces) {
-        return [Terminal.ID, Menu.ID, Network.ID];
+        return [Terminal.ID, Menu.ID, Network.ID, Json.ID, ConfirmInput.ID, Sdk.ID, Hex.ID];
     }
 }

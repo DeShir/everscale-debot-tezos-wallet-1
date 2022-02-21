@@ -4,10 +4,9 @@ import "./Action.sol";
 import "../lib/TezosClient.sol";
 
 
-abstract contract StateMachine is Contextable, Finishable, Stateable, Transitionable {
+abstract contract StateMachine is Contextable, Stateable, Transitionable {
 
     State current_state;
-    State next_current_state;
 
     mapping(State => mapping(Event => State)) transitions;
 
@@ -27,13 +26,7 @@ abstract contract StateMachine is Contextable, Finishable, Stateable, Transition
 
     function send(Event sm_event, string param) public override {
         State to = transitions[current_state][sm_event];
-        next_current_state = to;
         transition(current_state, to, param);
-    }
-
-    function finish(bool is_success) public override {
-        if(is_success) {
-            current_state = next_current_state;
-        }
+        current_state = to;
     }
 }
