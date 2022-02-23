@@ -74,3 +74,4 @@ fabric.properties
 build/*
 /debot_err.log
 conf_local/*
+.solc_imports/*

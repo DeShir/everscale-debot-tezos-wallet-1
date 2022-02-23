@@ -3,23 +3,15 @@ pragma AbiHeader expire;
 pragma AbiHeader time;
 pragma AbiHeader pubkey;
 
-import "./interface/Terminal.sol";
-import "./interface/Menu.sol";
-import "./interface/Network.sol";
-import "./interface/Debot.sol";
-import "./interface/Json.sol";
-import "./interface/ConfirmInput.sol";
-import "./interface/Sdk.sol";
-import "./interface/Hex.sol";
-import "./statemachine/StateMachine.sol";
+import "./Debot.sol";
+import "./interface/_all.sol";
+import "./TezosWalletStateMachine.sol";
 
-
-contract TezosWallet is Debot, StateMachine {
+contract App is Debot, TezosWalletStateMachine {
 
     /// @notice Entry point function for DeBot.
     function start() public override {
         init();
-        send(Event.Start, "");
     }
 
     /// @notice Returns Metadata about DeBot.
