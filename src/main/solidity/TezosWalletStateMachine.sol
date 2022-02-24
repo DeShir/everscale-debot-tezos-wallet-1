@@ -5,12 +5,12 @@ import "./sm/_all.sol";
 import "./wallet/_all.sol";
 
 // {Start}                  Init                        ->  WaitingInputWalletAddress
-// {Done}                   WaitingInputWalletAddress   ->  WalletWasInitialized
+// {Done}                   WaitingInputWalletAddress   ->  WaitingSecretInput
+// {Done}                   WaitingSecretInput          ->  WalletWasInitialized
 // {RequestBalance}         WalletWasInitialized        ->  BalanceRequested
 // {Done}                   BalanceRequested            ->  WalletWasInitialized
 // {ChangeWalletAddress}    WalletWasInitialized        ->  WaitingInputWalletAddress
 // {RequestSecret}          WalletWasInitialized        ->  WaitingSecretInput
-// {Done}                   WaitingSecretInput          ->  WalletWasInitialized
 // {StartTransaction}       WalletWasInitialized        ->  WaitingInputTargetAddress
 // {Done}                   WaitingInputTargetAddress   ->  WaitingInputAmount
 // {Done}                   WaitingInputAmount          ->  WaitingInputFee
@@ -43,7 +43,7 @@ abstract contract TezosWalletStateMachine is StateMachine,
     function initTransitions() private pure returns(Transition[]) {
         return [
             Transition(Event.Start,                     State.Init,                             State.WaitingInputWalletAddress),
-            Transition(Event.Done,                      State.WaitingInputWalletAddress,        State.WalletWasInitialized),
+            Transition(Event.Done,                      State.WaitingInputWalletAddress,        State.WaitingSecretInput),
             Transition(Event.RequestBalance,            State.WalletWasInitialized,             State.BalanceRequested),
             Transition(Event.Done,                      State.BalanceRequested,                 State.WalletWasInitialized),
             Transition(Event.ChangeWalletAddress,       State.WalletWasInitialized,             State.WaitingInputWalletAddress),
