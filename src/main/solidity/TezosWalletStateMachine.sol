@@ -28,13 +28,13 @@ abstract contract TezosWalletStateMachine is StateMachine,
 
     function init() internal {
         walletData = WalletData("", 0, TezosTransfer("", 0, 0));
-        Transition[] _transitions = initTransitions();
+        Transition[] arrTransitions = initTransitions();
 
         mapping(State => mapping(Event => State)) transitions;
 
-        for (uint i = 0; i < _transitions.length; i++) {
-            Transition _transition = _transitions[i];
-            transitions[_transition.from][_transition.sm_event] = _transition.to;
+        for (uint i = 0; i < arrTransitions.length; i++) {
+            Transition transition = arrTransitions[i];
+            transitions[transition.from][transition.smEvent] = transition.to;
         }
         stateMachineContext = StateMachineContext(transitions, State.Init);
         send(Event.Start);
@@ -59,13 +59,13 @@ abstract contract TezosWalletStateMachine is StateMachine,
     }
 
     function transition(State from, State to) internal override {
-        if(State.WaitingInputWalletAddress == to) requestInputAddress();
+        if(State.WaitingInputWalletAddress == to) requestAddress();
         if(State.WalletWasInitialized == to) showMainMenu();
         if(State.BalanceRequested == to) requestBalance();
         if(State.WaitingSecretInput == to) requestSecret();
-        if(State.WaitingInputTargetAddress == to) requestInputTargetAddress();
-        if(State.WaitingInputAmount == to) requestInputTransferAmount();
-        if(State.WaitingInputFee == to) requestInputTransferFee();
+        if(State.WaitingInputTargetAddress == to) requestDestinationAddress();
+        if(State.WaitingInputAmount == to) requestTransferAmount();
+        if(State.WaitingInputFee == to) requestTransferFee();
         if(State.WaitingConfirmation == to) requestConfirmation();
     }
 }

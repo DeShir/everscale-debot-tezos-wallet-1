@@ -6,26 +6,26 @@ import "../sm/_all.sol";
 abstract contract MainMenu is StateMachine {
     function showMainMenu() internal {
         Menu.select("Main menu", "", [
-            MenuItem("Check Balance", "", tvm.functionId(checkBalance)),
-            MenuItem("Change Wallet Address", "", tvm.functionId(changeWalletAddress)),
-            MenuItem("Input secret", "", tvm.functionId(requestSecretMenu)),
-            MenuItem("Start Transaction", "", tvm.functionId(startTransaction))
+            MenuItem("Check Balance", "", tvm.functionId(checkBalanceItemCallback)),
+            MenuItem("Change Wallet Address", "", tvm.functionId(changeWalletAddressItemCallback)),
+            MenuItem("Input secret", "", tvm.functionId(requestSecretItemCallback)),
+            MenuItem("Start Transaction", "", tvm.functionId(startTransactionCallback))
             ]);
     }
 
-    function checkBalance(uint32 index) public {
+    function checkBalanceItemCallback(uint32 index) public {
         send(Event.RequestBalance);
     }
 
-    function changeWalletAddress(uint32 index) public {
+    function changeWalletAddressItemCallback(uint32 index) public {
         send(Event.ChangeWalletAddress);
     }
 
-    function requestSecretMenu(uint32 index) public {
+    function requestSecretItemCallback(uint32 index) public {
         send(Event.RequestSecret);
     }
 
-    function startTransaction(uint32 index) public {
+    function startTransactionCallback(uint32 index) public {
         send(Event.StartTransaction);
     }
 }

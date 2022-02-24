@@ -7,12 +7,12 @@ import "../wallet/_all.sol";
 abstract contract InputSecret is StateMachine, TezosWallet {
 
     function requestSecret() internal {
-        SigningBoxInput.get(tvm.functionId(sing_box_handle), "Provide your secret:", new uint256[](0));
+        SigningBoxInput.get(tvm.functionId(requestSecretCallback), "Provide your secret:", new uint256[](0));
 
     }
 
-    function sing_box_handle(uint32 handle) public {
-        walletData.sing_box_handle = handle;
+    function requestSecretCallback(uint32 handle) public {
+        walletData.singBoxHandle = handle;
         send(Event.Done);
     }
 }

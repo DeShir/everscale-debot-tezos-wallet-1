@@ -10,7 +10,7 @@ struct StateMachineContext {
 }
 
 struct Transition {
-    Event sm_event;
+    Event smEvent;
     State from;
     State to;
 }
@@ -20,8 +20,8 @@ abstract contract StateMachine {
 
     function transition(State from, State to) internal virtual { }
 
-    function send(Event _event) internal {
-        State to = stateMachineContext.transitions[stateMachineContext.currentState][_event];
+    function send(Event smEvent) internal {
+        State to = stateMachineContext.transitions[stateMachineContext.currentState][smEvent];
         transition(stateMachineContext.currentState, to);
         stateMachineContext.currentState = to;
     }

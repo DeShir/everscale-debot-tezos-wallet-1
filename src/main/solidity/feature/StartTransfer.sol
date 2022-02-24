@@ -11,7 +11,7 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
     using JsonLib for JsonLib.Value;
     using Net for string;
 
-    struct TezosTransactionInfo {
+    struct TransactionData {
         string source;
         string target;
         uint128 amount;
@@ -25,108 +25,107 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
         int count;
     }
 
-    TezosTransactionInfo private transaction_info;
+    TransactionData private transactionData;
 
     function requestConfirmation() internal {
-        start_transaction(walletData.wallet_address, walletData.current_transfer.target_address,
-            walletData.current_transfer.amount, walletData.current_transfer.fee, walletData.sing_box_handle);
-    }
+        transactionData = TransactionData(walletData.walletAddress,
+            walletData.currentTransfer.destinationAddress,
+            walletData.currentTransfer.amount,
+            walletData.currentTransfer.fee, "", "", 0, "", "", walletData.singBoxHandle, 3);
 
-    function start_transaction(string from, string to, uint128 amount, uint128 fee, uint32 sing_box_handle) public {
-        transaction_info = TezosTransactionInfo(from, to, amount, fee, "", "", 0, "", "", sing_box_handle, 3);
         string url;
         url = Net.tezosUrl("/chains/main/blocks/head/header");
-        url.get(tvm.functionId(header_callback));
+        url.get(tvm.functionId(requestHeaderCallback));
         url = Net.tezosUrl("/chains/main/blocks/head/metadata");
-        url.get(tvm.functionId(metadata_callback));
-        url = Net.tezosUrl("/chains/main/blocks/head/context/contracts/" + from);
-        url.get(tvm.functionId(wallet_callback));
+        url.get(tvm.functionId(requestMetadataCallback));
+        url = Net.tezosUrl("/chains/main/blocks/head/context/contracts/" + walletData.walletAddress);
+        url.get(tvm.functionId(requestContractCallback));
     }
 
-    function header_callback(int32 statusCode, string[] retHeaders, string content) public {
-        Json.parse(tvm.functionId(parse_header_callback), content);
+    function requestHeaderCallback(int32 statusCode, string[] retHeaders, string content) public {
+        Json.parse(tvm.functionId(parseHeaderCallback), content);
     }
-    function metadata_callback(int32 statusCode, string[] retHeaders, string content) public {
-        Json.parse(tvm.functionId(parse_protocol_callback), content);
+    function requestMetadataCallback(int32 statusCode, string[] retHeaders, string content) public {
+        Json.parse(tvm.functionId(parseNextProtocolCallback), content);
     }
-    function wallet_callback(int32 statusCode, string[] retHeaders, string content) public {
-        Json.parse(tvm.functionId(parse_wallet_callback), content);
-    }
-
-    function parse_header_callback(bool result, JsonLib.Value obj) public {
-        transaction_info.branch = obj.hash().get();
-        transaction_info.count -= 1;
-        check_preparing_is_complete();
+    function requestContractCallback(int32 statusCode, string[] retHeaders, string content) public {
+        Json.parse(tvm.functionId(parseCounterCallback), content);
     }
 
-    function parse_protocol_callback(bool result, JsonLib.Value obj) public {
-        transaction_info.protocol = obj.nextProtocol().get();
-        transaction_info.count -= 1;
-        check_preparing_is_complete();
+    function parseHeaderCallback(bool result, JsonLib.Value obj) public {
+        transactionData.branch = obj.hash().get();
+        transactionData.count -= 1;
+        requestedDataIsComplete();
     }
 
-    function parse_wallet_callback(bool result, JsonLib.Value obj) public {
-        transaction_info.counter = obj.counter().get();
-        transaction_info.count -= 1;
-        check_preparing_is_complete();
+    function parseNextProtocolCallback(bool result, JsonLib.Value obj) public {
+        transactionData.protocol = obj.nextProtocol().get();
+        transactionData.count -= 1;
+        requestedDataIsComplete();
     }
 
-    function check_preparing_is_complete() private {
-        if(transaction_info.count == 0) {
-            forge_transaction();
+    function parseCounterCallback(bool result, JsonLib.Value obj) public {
+        transactionData.counter = obj.counter().get();
+        transactionData.count -= 1;
+        requestedDataIsComplete();
+    }
+
+    function requestedDataIsComplete() private {
+        if(transactionData.count == 0) {
+            requestTransactionForge();
         }
     }
 
-    function forge_transaction() private {
+    function requestTransactionForge() private {
         string url = Net.tezosUrl("/chains/main/blocks/head/helpers/forge/operations");
 
-        TezosJSON.Transaction transaction = TezosJSON.Transaction(transaction_info.branch, transaction_info.source,
-                                                transaction_info.target, transaction_info.amount,
-                                                transaction_info.fee, transaction_info.counter);
+        TezosJSON.Transaction transaction = TezosJSON.Transaction(transactionData.branch, transactionData.source,
+                                                transactionData.target, transactionData.amount,
+                                                transactionData.fee, transactionData.counter);
 
 
-        url.post(tvm.functionId(forge_transaction_callback), transaction.forgeTransactionRequest());
+        url.post(tvm.functionId(requestTransactionForgeCallback), transaction.forgeTransactionRequest());
     }
 
-    function forge_transaction_callback(int32 statusCode, string[] retHeaders, string content) public {
-        Json.parse(tvm.functionId(parse_forge_callback), content);
+    function requestTransactionForgeCallback(int32 statusCode, string[] retHeaders, string content) public {
+        Json.parse(tvm.functionId(parseTransactionForgeCallback), content);
     }
 
-    function parse_forge_callback(bool result, JsonLib.Value obj) public {
+    function parseTransactionForgeCallback(bool result, JsonLib.Value obj) public {
         if(obj.as_string().hasValue()) {
-            transaction_info.transaction_hex = obj.as_string().get();
-            ConfirmInput.get(tvm.functionId(confirm_transaction), format("Confirm transaction. Transfer {} xtz, (fee = {} xtz) from {}, to {}",
-                transaction_info.amount / 1000000.0, transaction_info.fee / 1000000.0, transaction_info.source, transaction_info.target));
+            transactionData.transaction_hex = obj.as_string().get();
+            ConfirmInput.get(tvm.functionId(confirmTransactionCallback), format("Confirm transaction. Transfer {} xtz, (fee = {} xtz) from {}, to {}",
+                transactionData.amount / 1000000.0, transactionData.fee / 1000000.0, transactionData.source, transactionData.target));
         } else {
             send(Event.Done);
         }
     }
 
-    function confirm_transaction(bool value) public {
+    function confirmTransactionCallback(bool value) public {
         // todo if transaction is not confirmed sm should be moved to wallet initialized state
         if(value) {
-            string url = Net.helperUrl("/hash/blake/" + "03" + transaction_info.transaction_hex);
-            url.get(tvm.functionId(confirm_transaction_handler));
+            string url = Net.helperUrl("/hash/blake/" + "03" + transactionData.transaction_hex);
+            url.get(tvm.functionId(blakeTransactionCallback));
         } else {
             send(Event.Done);
         }
     }
 
-    function confirm_transaction_handler(int32 statusCode, string[] retHeaders, string content) public {
-        Sdk.signHash(tvm.functionId(sign_handler), transaction_info.sing_box_handle, uint256(stoi("0x" + content).get()));
+    function blakeTransactionCallback(int32 statusCode, string[] retHeaders, string content) public {
+        Sdk.signHash(tvm.functionId(signTransactionCallback), transactionData.sing_box_handle, uint256(stoi("0x" + content).get()));
     }
 
-    function sign_handler(bytes signature) public {
-        Hex.encode(tvm.functionId(save_sign), signature);
+    function signTransactionCallback(bytes signature) public {
+        Hex.encode(tvm.functionId(injectTransaction), signature);
     }
 
-    function save_sign(string hexstr) public {
+    function injectTransaction(string hexstr) public {
         string url = Net.tezosUrl("/injection/operation");
-        transaction_info.transaction_sign = hexstr;
-        url.post(tvm.functionId(inject_callback), "\"" + transaction_info.transaction_hex + hexstr + "\"");
+        transactionData.transaction_sign = hexstr;
+        url.post(tvm.functionId(injectTransactionCallback), "\"" + transactionData.transaction_hex + hexstr + "\"");
     }
 
-    function inject_callback(int32 statusCode, string[] retHeaders, string content) public {
+    function injectTransactionCallback(int32 statusCode, string[] retHeaders, string content) public {
         send(Event.Done);
     }
 }

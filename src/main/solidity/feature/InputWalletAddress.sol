@@ -5,12 +5,12 @@ import "../sm/_all.sol";
 import "../wallet/_all.sol";
 
 abstract contract InputWalletAddress is StateMachine, TezosWallet {
-    function requestInputAddress() internal {
-        Terminal.input(tvm.functionId(setupTezosWalletAddress), "Please input Tezos Wallet Address:", false);
+    function requestAddress() internal {
+        Terminal.input(tvm.functionId(requestAddressCallback), "Please input Tezos Wallet Address:", false);
     }
 
-    function setupTezosWalletAddress(string value) public {
-        walletData.wallet_address = value;
+    function requestAddressCallback(string value) public {
+        walletData.walletAddress = value;
         send(Event.Done);
     }
 }

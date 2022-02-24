@@ -10,7 +10,7 @@ abstract contract ShowBalance is StateMachine, TezosWallet {
     using Net for *;
 
     function requestBalance() internal {
-        string url = Net.tezosUrl("/chains/main/blocks/head/context/contracts/" + walletData.wallet_address);
+        string url = Net.tezosUrl("/chains/main/blocks/head/context/contracts/" + walletData.walletAddress);
         url.get(tvm.functionId(requestBalanceCallback));
     }
 

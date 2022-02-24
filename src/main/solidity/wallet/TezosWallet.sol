@@ -1,15 +1,15 @@
 pragma ton-solidity >= 0.53.0;
 
 struct TezosTransfer {
-    string target_address;
+    string destinationAddress;
     uint128 amount;
     uint128 fee;
 }
 
 struct WalletData {
-    string wallet_address;
-    uint32 sing_box_handle;
-    TezosTransfer current_transfer;
+    string walletAddress;
+    uint32 singBoxHandle;
+    TezosTransfer currentTransfer;
 }
 
 abstract contract TezosWallet {
