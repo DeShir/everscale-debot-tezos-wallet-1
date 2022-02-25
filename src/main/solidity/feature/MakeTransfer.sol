@@ -11,6 +11,14 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
     using JsonLib for JsonLib.Value;
     using Net for string;
 
+    struct TezosTransfer {
+        string destinationAddress;
+        uint128 amount;
+        uint128 fee;
+    }
+
+    TezosTransfer private currentTransfer;
+
     struct TransactionData {
         string source;
         string target;
@@ -28,12 +36,13 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
     TransactionData private transactionData;
 
     function inputTransferData() internal {
+        currentTransfer = TezosTransfer("", 0, 0);
         Terminal.input(tvm.functionId(requestDestinationAddressCallback), "Please input  target Tezos Wallet Address:", false);
 
     }
 
     function requestDestinationAddressCallback(string value) public {
-        walletData.currentTransfer.destinationAddress = value;
+        currentTransfer.destinationAddress = value;
         requestTransferAmount();
     }
 
@@ -42,7 +51,7 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
     }
 
     function requestTransferAmountCallback(uint128 value) public {
-        walletData.currentTransfer.amount = value;
+        currentTransfer.amount = value;
         requestTransferFee();
     }
 
@@ -51,15 +60,15 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
     }
 
     function requestTransferFeeCallback(uint128 value) public {
-        walletData.currentTransfer.fee = value;
+        currentTransfer.fee = value;
         requestConfirmation();
     }
 
     function requestConfirmation() private {
         transactionData = TransactionData(walletData.walletAddress,
-            walletData.currentTransfer.destinationAddress,
-            walletData.currentTransfer.amount,
-            walletData.currentTransfer.fee, "", "", 0, "", "", walletData.singBoxHandle, 3);
+            currentTransfer.destinationAddress,
+            currentTransfer.amount,
+            currentTransfer.fee, "", "", 0, "", "", walletData.singBoxHandle, 3);
 
         string url;
         url = Net.tezosUrl("/chains/main/blocks/head/header");

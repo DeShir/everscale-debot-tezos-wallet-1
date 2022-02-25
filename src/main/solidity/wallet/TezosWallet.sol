@@ -9,7 +9,6 @@ struct TezosTransfer {
 struct WalletData {
     string walletAddress;
     uint32 singBoxHandle;
-    TezosTransfer currentTransfer;
 }
 
 abstract contract TezosWallet {

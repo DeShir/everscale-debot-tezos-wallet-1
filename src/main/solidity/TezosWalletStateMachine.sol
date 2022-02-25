@@ -13,7 +13,7 @@ abstract contract TezosWalletStateMachine is StateMachine,
     {
 
     function init() internal {
-        walletData = WalletData("", 0, TezosTransfer("", 0, 0));
+        walletData = WalletData("", 0);
         Transition[] arrTransitions = initTransitions();
 
         mapping(State => mapping(Event => State)) transitions;
