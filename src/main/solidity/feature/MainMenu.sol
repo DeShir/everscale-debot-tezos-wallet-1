@@ -26,6 +26,6 @@ abstract contract MainMenu is StateMachine {
     }
 
     function startTransactionCallback(uint32 index) public {
-        send(Event.StartTransaction);
+        send(Event.StartTransfer);
     }
 }

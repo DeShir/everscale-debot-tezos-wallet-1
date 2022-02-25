@@ -1,8 +1,8 @@
 pragma ton-solidity >= 0.53.0;
 
-enum Event {Start, Done, RequestBalance, ChangeWalletAddress, RequestSecret, StartTransaction}
-enum State {Init, WaitingInputWalletAddress, WalletWasInitialized, BalanceRequested, WaitingSecretInput,
-    WaitingInputTargetAddress, WaitingInputAmount, WaitingInputFee, WaitingConfirmation}
+enum Event {Start, Done, RequestBalance, ChangeWalletAddress, RequestSecret, StartTransfer}
+enum State {Init, WaitingInputWalletAddress, MainMenu, BalanceRequested, WaitingSecretInput,
+    ProvideTransferData, ConfirmTransfer}
 
 struct StateMachineContext {
     mapping(State => mapping(Event => State)) transitions;

@@ -4,26 +4,12 @@ import "./feature/_all.sol";
 import "./sm/_all.sol";
 import "./wallet/_all.sol";
 
-// {Start}                  Init                        ->  WaitingInputWalletAddress
-// {Done}                   WaitingInputWalletAddress   ->  WaitingSecretInput
-// {Done}                   WaitingSecretInput          ->  WalletWasInitialized
-// {RequestBalance}         WalletWasInitialized        ->  BalanceRequested
-// {Done}                   BalanceRequested            ->  WalletWasInitialized
-// {ChangeWalletAddress}    WalletWasInitialized        ->  WaitingInputWalletAddress
-// {RequestSecret}          WalletWasInitialized        ->  WaitingSecretInput
-// {StartTransaction}       WalletWasInitialized        ->  WaitingInputTargetAddress
-// {Done}                   WaitingInputTargetAddress   ->  WaitingInputAmount
-// {Done}                   WaitingInputAmount          ->  WaitingInputFee
-// {Done}                   WaitingInputFee             ->  WalletWasInitialized
-
 abstract contract TezosWalletStateMachine is StateMachine,
     InputWalletAddress,
     MainMenu,
     ShowBalance,
     InputSecret,
-    InputTargetAddress,
-    InputTransferAmount,
-    InputTransferFee,
+    StartTransfer,
     ConfirmTransfer {
 
     function init() internal {
@@ -40,32 +26,37 @@ abstract contract TezosWalletStateMachine is StateMachine,
         send(Event.Start);
     }
 
+    // {Start}                  Init                        ->  WaitingInputWalletAddress
+    // {Done}                   WaitingInputWalletAddress   ->  WaitingSecretInput
+    // {Done}                   WaitingSecretInput          ->  MainMenu
+    // {RequestBalance}         MainMenu                    ->  BalanceRequested
+    // {Done}                   BalanceRequested            ->  MainMenu
+    // {ChangeWalletAddress}    MainMenu                    ->  WaitingInputWalletAddress
+    // {RequestSecret}          MainMenu                    ->  WaitingSecretInput
+    // {StartTransfer}          MainMenu                    ->  ProvideTransferData
+    // {Done}                   ProvideTransferData         ->  ConfirmTransfer
+    // {Done}                   ConfirmTransfer             ->  ConfirmTransfer
     function initTransitions() private pure returns(Transition[]) {
         return [
             Transition(Event.Start,                     State.Init,                             State.WaitingInputWalletAddress),
             Transition(Event.Done,                      State.WaitingInputWalletAddress,        State.WaitingSecretInput),
-            Transition(Event.RequestBalance,            State.WalletWasInitialized,             State.BalanceRequested),
-            Transition(Event.Done,                      State.BalanceRequested,                 State.WalletWasInitialized),
-            Transition(Event.ChangeWalletAddress,       State.WalletWasInitialized,             State.WaitingInputWalletAddress),
-            Transition(Event.RequestSecret,             State.WalletWasInitialized,             State.WaitingSecretInput),
-            Transition(Event.Done,                      State.WaitingSecretInput,               State.WalletWasInitialized),
-            Transition(Event.StartTransaction,          State.WalletWasInitialized,             State.WaitingInputTargetAddress),
-            Transition(Event.Done,                      State.WaitingInputTargetAddress,        State.WaitingInputAmount),
-            Transition(Event.Done,                      State.WaitingInputAmount,               State.WaitingInputFee),
-            Transition(Event.Done,                      State.WaitingInputFee,                  State.WaitingConfirmation),
-            Transition(Event.Done,                      State.WaitingConfirmation,              State.WalletWasInitialized)
-
+            Transition(Event.Done,                      State.WaitingSecretInput,               State.MainMenu),
+            Transition(Event.RequestBalance,            State.MainMenu,                         State.BalanceRequested),
+            Transition(Event.Done,                      State.BalanceRequested,                 State.MainMenu),
+            Transition(Event.ChangeWalletAddress,       State.MainMenu,                         State.WaitingInputWalletAddress),
+            Transition(Event.RequestSecret,             State.MainMenu,                         State.WaitingSecretInput),
+            Transition(Event.StartTransfer,             State.MainMenu,                         State.ProvideTransferData),
+            Transition(Event.Done,                      State.ProvideTransferData,              State.ConfirmTransfer),
+            Transition(Event.Done,                      State.ConfirmTransfer,                  State.MainMenu)
         ];
     }
 
     function transition(State from, State to) internal override {
         if(State.WaitingInputWalletAddress == to) requestAddress();
-        if(State.WalletWasInitialized == to) showMainMenu();
+        if(State.MainMenu == to) showMainMenu();
         if(State.BalanceRequested == to) requestBalance();
         if(State.WaitingSecretInput == to) requestSecret();
-        if(State.WaitingInputTargetAddress == to) requestDestinationAddress();
-        if(State.WaitingInputAmount == to) requestTransferAmount();
-        if(State.WaitingInputFee == to) requestTransferFee();
-        if(State.WaitingConfirmation == to) requestConfirmation();
+        if(State.ProvideTransferData == to) inputTransferData();
+        if(State.ConfirmTransfer == to) requestConfirmation();
     }
 }

@@ -4,7 +4,5 @@ import "./InputWalletAddress.sol";
 import "./MainMenu.sol";
 import "./ShowBalance.sol";
 import "./InputSecret.sol";
-import "./InputTargetAddress.sol";
-import "./InputTransferAmount.sol";
-import "./InputTransferFee.sol";
+import "./StartTransfer.sol";
 import "./ConfirmTransfer.sol";
