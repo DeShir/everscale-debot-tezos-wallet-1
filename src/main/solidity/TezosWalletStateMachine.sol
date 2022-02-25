@@ -24,7 +24,7 @@ abstract contract TezosWalletStateMachine is StateMachine,
     InputTargetAddress,
     InputTransferAmount,
     InputTransferFee,
-    StartTransfer {
+    ConfirmTransfer {
 
     function init() internal {
         walletData = WalletData("", 0, TezosTransfer("", 0, 0));

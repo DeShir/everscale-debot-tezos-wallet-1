@@ -7,4 +7,4 @@ import "./InputSecret.sol";
 import "./InputTargetAddress.sol";
 import "./InputTransferAmount.sol";
 import "./InputTransferFee.sol";
-import "./StartTransfer.sol";
+import "./ConfirmTransfer.sol";

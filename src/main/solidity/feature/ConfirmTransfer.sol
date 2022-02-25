@@ -5,7 +5,7 @@ import "../sm/_all.sol";
 import "../lib/_all.sol";
 import "../wallet/_all.sol";
 
-abstract contract StartTransfer is StateMachine, TezosWallet {
+abstract contract ConfirmTransfer is StateMachine, TezosWallet {
     using TezosJSON for JsonLib.Value;
     using TezosJSON for TezosJSON.Transaction;
     using JsonLib for JsonLib.Value;
