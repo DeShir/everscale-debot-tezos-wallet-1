@@ -9,8 +9,8 @@ abstract contract TezosWalletStateMachine is StateMachine,
     MainMenu,
     ShowBalance,
     InputSecret,
-    StartTransfer,
-    ConfirmTransfer {
+    MakeTransfer
+    {
 
     function init() internal {
         walletData = WalletData("", 0, TezosTransfer("", 0, 0));
@@ -33,9 +33,8 @@ abstract contract TezosWalletStateMachine is StateMachine,
     // {Done}                   BalanceRequested            ->  MainMenu
     // {ChangeWalletAddress}    MainMenu                    ->  WaitingInputWalletAddress
     // {RequestSecret}          MainMenu                    ->  WaitingSecretInput
-    // {StartTransfer}          MainMenu                    ->  ProvideTransferData
-    // {Done}                   ProvideTransferData         ->  ConfirmTransfer
-    // {Done}                   ConfirmTransfer             ->  ConfirmTransfer
+    // {MakeTransfer}           MainMenu                    ->  Transfer
+    // {Done}                   Transfer                    ->  MainMenu
     function initTransitions() private pure returns(Transition[]) {
         return [
             Transition(Event.Start,                     State.Init,                             State.WaitingInputWalletAddress),
@@ -45,9 +44,8 @@ abstract contract TezosWalletStateMachine is StateMachine,
             Transition(Event.Done,                      State.BalanceRequested,                 State.MainMenu),
             Transition(Event.ChangeWalletAddress,       State.MainMenu,                         State.WaitingInputWalletAddress),
             Transition(Event.RequestSecret,             State.MainMenu,                         State.WaitingSecretInput),
-            Transition(Event.StartTransfer,             State.MainMenu,                         State.ProvideTransferData),
-            Transition(Event.Done,                      State.ProvideTransferData,              State.ConfirmTransfer),
-            Transition(Event.Done,                      State.ConfirmTransfer,                  State.MainMenu)
+            Transition(Event.MakeTransfer,              State.MainMenu,                         State.Transfer),
+            Transition(Event.Done,                      State.Transfer,                         State.MainMenu)
         ];
     }
 
@@ -56,7 +54,6 @@ abstract contract TezosWalletStateMachine is StateMachine,
         if(State.MainMenu == to) showMainMenu();
         if(State.BalanceRequested == to) requestBalance();
         if(State.WaitingSecretInput == to) requestSecret();
-        if(State.ProvideTransferData == to) inputTransferData();
-        if(State.ConfirmTransfer == to) requestConfirmation();
+        if(State.Transfer == to) inputTransferData();
     }
 }

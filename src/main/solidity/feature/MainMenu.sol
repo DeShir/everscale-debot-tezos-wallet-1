@@ -9,7 +9,7 @@ abstract contract MainMenu is StateMachine {
             MenuItem("Check Balance", "", tvm.functionId(checkBalanceItemCallback)),
             MenuItem("Change Wallet Address", "", tvm.functionId(changeWalletAddressItemCallback)),
             MenuItem("Input secret", "", tvm.functionId(requestSecretItemCallback)),
-            MenuItem("Start Transaction", "", tvm.functionId(startTransactionCallback))
+            MenuItem("Start Transaction", "", tvm.functionId(makeTransactionCallback))
             ]);
     }
 
@@ -25,7 +25,7 @@ abstract contract MainMenu is StateMachine {
         send(Event.RequestSecret);
     }
 
-    function startTransactionCallback(uint32 index) public {
-        send(Event.StartTransfer);
+    function makeTransactionCallback(uint32 index) public {
+        send(Event.MakeTransfer);
     }
 }

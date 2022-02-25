@@ -2,10 +2,10 @@ pragma ton-solidity >= 0.53.0;
 
 import "../interface/_all.sol";
 import "../sm/_all.sol";
-import "../lib/_all.sol";
 import "../wallet/_all.sol";
+import "../lib/_all.sol";
 
-abstract contract ConfirmTransfer is StateMachine, TezosWallet {
+abstract contract MakeTransfer is StateMachine, TezosWallet {
     using TezosJSON for JsonLib.Value;
     using TezosJSON for TezosJSON.Transaction;
     using JsonLib for JsonLib.Value;
@@ -27,7 +27,35 @@ abstract contract ConfirmTransfer is StateMachine, TezosWallet {
 
     TransactionData private transactionData;
 
-    function requestConfirmation() internal {
+    function inputTransferData() internal {
+        Terminal.input(tvm.functionId(requestDestinationAddressCallback), "Please input  target Tezos Wallet Address:", false);
+
+    }
+
+    function requestDestinationAddressCallback(string value) public {
+        walletData.currentTransfer.destinationAddress = value;
+        requestTransferAmount();
+    }
+
+    function requestTransferAmount() private {
+        AmountInput.get(tvm.functionId(requestTransferAmountCallback), "Enter amount:",  6, 0, 1000e6);
+    }
+
+    function requestTransferAmountCallback(uint128 value) public {
+        walletData.currentTransfer.amount = value;
+        requestTransferFee();
+    }
+
+    function requestTransferFee() private {
+        AmountInput.get(tvm.functionId(requestTransferFeeCallback), "Enter fee:",  6, 0, 1000e6);
+    }
+
+    function requestTransferFeeCallback(uint128 value) public {
+        walletData.currentTransfer.fee = value;
+        requestConfirmation();
+    }
+
+    function requestConfirmation() private {
         transactionData = TransactionData(walletData.walletAddress,
             walletData.currentTransfer.destinationAddress,
             walletData.currentTransfer.amount,
@@ -80,8 +108,8 @@ abstract contract ConfirmTransfer is StateMachine, TezosWallet {
         string url = Net.tezosUrl("/chains/main/blocks/head/helpers/forge/operations");
 
         TezosJSON.Transaction transaction = TezosJSON.Transaction(transactionData.branch, transactionData.source,
-                                                transactionData.target, transactionData.amount,
-                                                transactionData.fee, transactionData.counter);
+            transactionData.target, transactionData.amount,
+            transactionData.fee, transactionData.counter);
 
 
         url.post(tvm.functionId(requestTransactionForgeCallback), transaction.forgeTransactionRequest());
