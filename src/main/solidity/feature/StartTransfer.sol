@@ -19,9 +19,9 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
         string branch;
         string protocol;
         int256 counter;
-        string transaction_hex;
-        string transaction_sign;
-        uint32 sing_box_handle;
+        string transactionHex;
+        string transactionSign;
+        uint32 singBoxHandle;
         int count;
     }
 
@@ -93,7 +93,7 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
 
     function parseTransactionForgeCallback(bool result, JsonLib.Value obj) public {
         if(obj.as_string().hasValue()) {
-            transactionData.transaction_hex = obj.as_string().get();
+            transactionData.transactionHex = obj.as_string().get();
             ConfirmInput.get(tvm.functionId(confirmTransactionCallback), format("Confirm transaction. Transfer {} xtz, (fee = {} xtz) from {}, to {}",
                 transactionData.amount / 1000000.0, transactionData.fee / 1000000.0, transactionData.source, transactionData.target));
         } else {
@@ -104,7 +104,7 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
     function confirmTransactionCallback(bool value) public {
         // todo if transaction is not confirmed sm should be moved to wallet initialized state
         if(value) {
-            string url = Net.helperUrl("/hash/blake/" + "03" + transactionData.transaction_hex);
+            string url = Net.helperUrl("/hash/blake/" + "03" + transactionData.transactionHex);
             url.get(tvm.functionId(blakeTransactionCallback));
         } else {
             send(Event.Done);
@@ -112,7 +112,7 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
     }
 
     function blakeTransactionCallback(int32 statusCode, string[] retHeaders, string content) public {
-        Sdk.signHash(tvm.functionId(signTransactionCallback), transactionData.sing_box_handle, uint256(stoi("0x" + content).get()));
+        Sdk.signHash(tvm.functionId(signTransactionCallback), transactionData.singBoxHandle, uint256(stoi("0x" + content).get()));
     }
 
     function signTransactionCallback(bytes signature) public {
@@ -121,8 +121,8 @@ abstract contract StartTransfer is StateMachine, TezosWallet {
 
     function injectTransaction(string hexstr) public {
         string url = Net.tezosUrl("/injection/operation");
-        transactionData.transaction_sign = hexstr;
-        url.post(tvm.functionId(injectTransactionCallback), "\"" + transactionData.transaction_hex + hexstr + "\"");
+        transactionData.transactionSign = hexstr;
+        url.post(tvm.functionId(injectTransactionCallback), "\"" + transactionData.transactionHex + hexstr + "\"");
     }
 
     function injectTransactionCallback(int32 statusCode, string[] retHeaders, string content) public {
