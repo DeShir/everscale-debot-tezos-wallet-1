@@ -36,7 +36,7 @@ library TezosJSON {
         return jsonValue.asString();
     }
 
-    function forgeTransactionRequest(string branch, string source, string destination, uint128 amount, uint128 fee, int256 counter) internal returns (string) {
+    function forgeTransactionRequest(string branch, string source, string destination, int amount, int fee, int256 counter) internal returns (string) {
         return "{"
                 + "\"branch\":\"" + branch + "\","
                 + "\"contents\":["

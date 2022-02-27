@@ -13,8 +13,8 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
 
     string private branch;
     string private destination;
-    uint128 private amount;
-    uint128 private fee;
+    int private amount;
+    int private fee;
     int256 private counter;
 
     int private countTezosInformationRequests;
