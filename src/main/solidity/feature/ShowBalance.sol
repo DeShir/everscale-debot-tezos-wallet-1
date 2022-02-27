@@ -8,6 +8,7 @@ import "../wallet/_all.sol";
 abstract contract ShowBalance is StateMachine, TezosWallet {
     using TezosJSON for JsonLib.Value;
     using Net for *;
+    using TezosUnits for int;
 
     function requestBalance() internal {
         string url = Net.tezosUrl("/chains/main/blocks/head/context/contracts/" + walletData.walletAddress);
@@ -22,7 +23,7 @@ abstract contract ShowBalance is StateMachine, TezosWallet {
     function parseBalanceCallback(bool result, JsonLib.Value obj) public {
         optional(int) balance = obj.balance();
         if(balance.hasValue()) {
-            Terminal.print(0, format("Balance: {} xtz", fixed(balance.get()) / 1000000.0));
+            Terminal.print(0, format("Balance: {} xtz", balance.get().xtz()));
         } else {
             Terminal.print(0, "Something went wrong, balance didn't available.");
         }

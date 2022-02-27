@@ -7,38 +7,36 @@ import "../lib/_all.sol";
 
 abstract contract MakeTransfer is StateMachine, TezosWallet {
     using TezosJSON for JsonLib.Value;
-    using TezosJSON for TezosJSON.Transaction;
     using JsonLib for JsonLib.Value;
     using Net for string;
+    using TezosUnits for int;
+
+    string private branch;
+    string private destination;
+    uint128 private amount;
+    uint128 private fee;
+    int256 private counter;
 
     int private countTezosInformationRequests;
-
-
-    TezosJSON.Transaction transaction;
     string private forgeTransactionData;
 
-
     function inputTransferData() internal {
-        transaction = TezosJSON.Transaction("", walletData.walletAddress, "", 0, 0, 0);
         Terminal.input(tvm.functionId(requestDestinationAddressCallback), "Please input  target Tezos Wallet Address:", false);
-
     }
 
     function requestDestinationAddressCallback(string value) public {
-        transaction.destination = value;
+        destination = value;
         AmountInput.get(tvm.functionId(requestTransferAmountCallback), "Enter amount:",  6, 0, 1000e6);
     }
 
     function requestTransferAmountCallback(uint128 value) public {
-        transaction.amount = value;
+        amount = value;
         AmountInput.get(tvm.functionId(requestTransferFeeCallback), "Enter fee:",  6, 0, 1000e6);
     }
 
     function requestTransferFeeCallback(uint128 value) public {
-        transaction.fee = value;
-
+        fee = value;
         countTezosInformationRequests = 2;
-
         string url;
         url = Net.tezosUrl("/chains/main/blocks/head/header");
         url.get(tvm.functionId(requestHeaderCallback));
@@ -55,13 +53,13 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
     }
 
     function parseHeaderCallback(bool result, JsonLib.Value obj) public {
-        transaction.branch = obj.hash().get();
+        branch = obj.hash().get();
         countTezosInformationRequests -= 1;
         isRequestedDataCompleted();
     }
 
     function parseCounterCallback(bool result, JsonLib.Value obj) public {
-        transaction.counter = obj.counter().get();
+        counter = obj.counter().get();
         countTezosInformationRequests -= 1;
         isRequestedDataCompleted();
     }
@@ -74,7 +72,8 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
 
     function requestTransactionForge() private {
         string url = Net.tezosUrl("/chains/main/blocks/head/helpers/forge/operations");
-        url.post(tvm.functionId(requestTransactionForgeCallback), transaction.forgeTransactionRequest());
+        url.post(tvm.functionId(requestTransactionForgeCallback),
+            TezosJSON.forgeTransactionRequest(branch, walletData.walletAddress, destination, amount, fee, counter));
     }
 
     function requestTransactionForgeCallback(int32 statusCode, string[] retHeaders, string content) public {
@@ -84,15 +83,16 @@ abstract contract MakeTransfer is StateMachine, TezosWallet {
     function parseTransactionForgeCallback(bool result, JsonLib.Value obj) public {
         if(obj.as_string().hasValue()) {
             forgeTransactionData = obj.as_string().get();
-            ConfirmInput.get(tvm.functionId(confirmTransactionCallback), format("Confirm transaction. Transfer {} xtz, (fee = {} xtz) from {}, to {}",
-                transaction.amount / 1000000.0, transaction.fee / 1000000.0, walletData.walletAddress, transaction.destination));
+            ConfirmInput.get(tvm.functionId(confirmTransactionCallback),
+                format("Confirm transaction. Transfer {} xtz, (fee = {} xtz) from {}, to {}",
+                amount.xtz(), fee.xtz(),
+                walletData.walletAddress, destination));
         } else {
             send(Event.Done);
         }
     }
 
     function confirmTransactionCallback(bool value) public {
-        // todo if transaction is not confirmed sm should be moved to wallet initialized state
         if(value) {
             string url = Net.helperUrl("/hash/blake/" + "03" + forgeTransactionData);
             url.get(tvm.functionId(blakeTransactionCallback));

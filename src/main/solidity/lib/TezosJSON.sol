@@ -4,15 +4,6 @@ import "../interface/_all.sol";
 import "./OptionalJSON.sol";
 
 library TezosJSON {
-    struct Transaction {
-        string branch;
-        string source;
-        string destination;
-        uint128 amount;
-        uint128 fee;
-        int256 counter;
-    }
-
     using OptionalJSON for JsonLib.Value;
     using OptionalJSON for optional(JsonLib.Value);
     using OptionalJSON for optional(string);
@@ -45,19 +36,19 @@ library TezosJSON {
         return jsonValue.asString();
     }
 
-    function forgeTransactionRequest(Transaction transaction) internal returns (string) {
+    function forgeTransactionRequest(string branch, string source, string destination, uint128 amount, uint128 fee, int256 counter) internal returns (string) {
         return "{"
-                + "\"branch\":\"" + transaction.branch + "\","
+                + "\"branch\":\"" + branch + "\","
                 + "\"contents\":["
                 +   "{"
                 +       "\"kind\":\"transaction\","
-                +       "\"source\":\"" + transaction.source + "\","
-                +       "\"destination\":\"" + transaction.destination + "\","
-                +       "\"fee\":\"" + format("{}", transaction.fee) + "\","
-                +       "\"counter\":\"" + format("{}", transaction.counter + 1) + "\","
+                +       "\"source\":\"" + source + "\","
+                +       "\"destination\":\"" + destination + "\","
+                +       "\"fee\":\"" + format("{}", fee) + "\","
+                +       "\"counter\":\"" + format("{}", counter + 1) + "\","
                 +       "\"gas_limit\":\"1040000\", "
                 +       "\"storage_limit\":\"60000\","
-                +       "\"amount\":\"" + format("{}", transaction.amount) + "\""
+                +       "\"amount\":\"" + format("{}", amount) + "\""
                 +   "}"
                 + "]}";
     }
