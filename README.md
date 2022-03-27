@@ -2,7 +2,7 @@
 
 ## Description
 The project implements Tezos Wallet base on DeBot technology. 
-For working this DeBot there is needs to be up helper service https://everscale-helper.herokuapp.com/.
+For working this DeBot there is needs helper service(https://github.com/DeShir/everscale-helper) to be up.
 
 ## Usage
 - Compile<br>
