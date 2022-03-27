@@ -19,8 +19,8 @@ contract App is Debot, TezosWalletStateMachine {
         string name, string version, string publisher, string caption, string author,
         address support, string hello, string language, string dabi, bytes icon
     ) {
-        name = "Tezos Wallet Bot";
-        version = "0.0.2";
+        name = "Tezos Wallet DeBot 1";
+        version = "0.1.0";
         publisher = "ShiroKovka";
         caption = "";
         author = "ShiroKovka";
