@@ -4,7 +4,7 @@ import "../interface/_all.sol";
 
 library Net {
     string constant tezosHost = "https://rpc.hangzhounet.teztnets.xyz";
-    string constant helperHost = "https://tezos-debot-helper.herokuapp.com";
+    string constant helperHost = "https://everscale-helper.herokuapp.com";
 
     function get(string url, uint32 functionId) internal {
         string[] headers;

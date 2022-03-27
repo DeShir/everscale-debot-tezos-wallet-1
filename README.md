@@ -14,4 +14,4 @@ For working this DeBot there is needs to be up helper service https://everscale-
 
 ## Address
 https://net.ton.dev
-`0:a6cf0143f371e88567be7222d33253fc2f29c80aba4ffe611e27207898bf007e`
+`0:e2cddd3bdd3c247a14829c92d352a35a7514d06916f92c718c8d0d35d22ad44b`
